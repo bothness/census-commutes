@@ -1,0 +1,236 @@
+<html>
+
+<head>
+  <title>Manchester Commutes</title>
+
+  <script src="https://unpkg.com/deck.gl@^8.2.3/dist.min.js"></script>
+
+  <script src='https://api.mapbox.com/mapbox-gl-js/v1.11.1/mapbox-gl.js'></script>
+  <link href='https://api.mapbox.com/mapbox-gl-js/v1.11.1/mapbox-gl.css' rel='stylesheet' />
+
+  <style type="text/css">
+    body {
+      font-family: Helvetica, Arial, sans-serif;
+      width: 100vw;
+      height: 100vh;
+      margin: 0;
+      background-color: #222;
+    }
+
+    #control-panel {
+      position: absolute;
+      top: 0;
+      left: 0;
+      margin: 12px;
+      padding: 20px;
+      font-size: 12px;
+      line-height: 1.5;
+      z-index: 1;
+      background: #fff;
+      font-family: Helvetica, Arial, sans-serif;
+      box-shadow: 0 0 4px rgba(0, 0, 0, 0.15);
+    }
+
+    label {
+      display: inline-block;
+      vertical-align: middle;
+    }
+
+    .slider {
+      display: inline-block;
+      vertical-align: bottom;
+      width: 150px;
+    }
+
+    .title {
+      font-size: 1.6em;
+      font-weight: 700;
+    }
+
+    .footer {
+      font-size: 1em;
+      margin-top: 20px;
+      color: #777;
+    }
+
+    .block {
+      margin-bottom: 20px;
+    }
+
+    .legend {
+      display: table;
+      width: 100%;
+      white-space: nowrap;
+    }
+
+    .item {
+      margin: 4px 0;
+    }
+
+    .dot {
+      height: 10px;
+      width: 10px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="control-panel">
+    <div class="block">
+      <span class="title">Manchester Commutes</span>
+    </div>
+    <div class="block">
+      <label>Home</label>
+      <input class="slider" id="timeslider" type="range" min="0" max="1" step="0.01" value="0"></input>
+      <label>Work</label>
+    </div>
+    <div id="legend"></div>
+    <div class="footer">
+      Visualization made with <a href="https://deck.gl/" target="_blank">DeckGL</a>.
+      <br>Data from <a
+        href="https://www.nomisweb.co.uk/census/2011/ks101ew" target="_blank">ONS/Nomis, 2011</a>.
+    </div>
+  </div>
+</body>
+
+<script type="text/javascript">
+
+  const { DeckGL, tripsLayer } = deck;
+
+  const MAPBOX_TOKEN = 'pk.eyJ1IjoiYXJrYmFyY2xheSIsImEiOiJjamdxeDF3ZXMzN2IyMnFyd3EwdGcwMDVxIn0.P2bkpp8HGNeY3-FOsxXVvA';
+
+  const TRIPS_URL = 'https://ahmadb8.sg-host.com/data/trips.json';
+
+  const METADATA = {
+    'train_metro': {
+      label: 'Train/Metro',
+      color: [241, 90, 34],
+      perc: 10
+    },
+    'bus_coach': {
+      label: 'Bus/Coach',
+      color: [255, 198, 11],
+      perc: 10
+    },
+    'car_taxi': {
+      label: 'Car/Taxi',
+      color: [77, 179, 75],
+      perc: 10
+    },
+    'motorcycle': {
+      label: 'Motorcycle',
+      color: [0, 174, 239],
+      perc: 10
+    },
+    'bicycle': {
+      label: 'Bicycle',
+      color: [236, 0, 140],
+      perc: 10
+    },
+    'foot': {
+      label: 'On Foot',
+      color: [134, 50, 140],
+      perc: 10
+    },
+    'other': {
+      label: 'Other',
+      color: [128, 128, 128],
+      perc: 10
+    }
+  }
+
+  const INITIAL_VIEW_STATE = {
+    latitude: 53.4200,
+    longitude: -2.2446,
+    zoom: 10,
+    bearing: 0,
+    pitch: 50,
+    maxPitch: 89
+  };
+
+  const deckgl = new DeckGL({
+    mapboxApiAccessToken: MAPBOX_TOKEN,
+    mapStyle: 'https://bothness.github.io/census-dots/data/style-dark.json',
+    initialViewState: INITIAL_VIEW_STATE,
+    controller: true
+  });
+
+  var data = [];
+  var filtered = [];
+
+  function renderLayer() {
+
+    const time = document.getElementById('timeslider').value;
+
+    const tripsLayer = new deck.TripsLayer({
+      id: 'trips',
+      data: filtered,
+      getPath: d => d.path,
+      getTimestamps: d => d.timestamps,
+      getColor: d => (METADATA[d.type].color),
+      opacity: 1,
+      widthMinPixels: 2,
+      rounded: true,
+      trailLength: 0.002,
+      currentTime: Number(time)
+    });
+
+    deckgl.setProps({
+      controller: true,
+      layers: [tripsLayer]
+    });
+  }
+
+  // Function to add legend scale
+  function genLegend() {
+    let html = '';
+    for (i in METADATA) {
+      html += '<p class="item"><span class="dot" style="background-color: rgb(' + METADATA[i].color.toString() + ');"></span> <input type="checkbox" id="legend_' + i + '" checked /> ' + METADATA[i].label + ' <span id="perc_' + i + '"></span></p>';
+    }
+    legend.innerHTML = html;
+    for (i in METADATA) {
+      let element = document.getElementById('legend_' + i);
+      element.onclick = () => {
+        filter();
+      };
+    }
+  }
+
+  // Function to filter data
+  function filter() {
+    let filters = [];
+    for (i in METADATA) {
+      if (document.getElementById('legend_' + i).checked) {
+        filters.push(i);
+      }
+    }
+    filtered = data.filter(trip => {
+      return filters.includes(trip.type);
+    });
+    renderLayer();
+  }
+
+  const legend = document.getElementById('legend');
+  genLegend();
+
+  fetch(TRIPS_URL)
+    .then(response => {
+      return response.text()
+    })
+    .then(rawjson => {
+      return JSON.parse(rawjson)
+    })
+    .then(json => {
+      data = json;
+      filtered = json;
+      renderLayer();
+    });
+
+  // Event listener to trigger re-render
+  document.getElementById('timeslider').oninput = renderLayer;
+
+</script>
+
+</html>

@@ -31,16 +31,6 @@
       "minzoom": 0,
       "maxzoom": 14,
       "attribution": "<a href=\"https://www.openstreetmap.org\" target=\"_blank\">OpenStreetMap</a>"
-    },
-    "boundaries": {
-      "type": "vector",
-      "tiles": [
-        "https://cdn.ons.gov.uk/maptiles/administrative/msoa/v1/boundaries/{z}/{x}/{y}.pbf"
-      ],
-      "buffer": 0,
-      "minzoom": 0,
-      "maxzoom": 14,
-      "attribution": "<a href=\"http://geoportal.statistics.gov.uk\" target=\"_blank\">ONS Geography</a>"
     }
   },
   "sprite": "https://openmaptiles.github.io/positron-gl-style/sprite",
@@ -1285,24 +1275,6 @@
             ]
           ]
         },
-        "line-opacity": 1
-      }
-    },
-    {
-      "id": "boundary_msoa",
-      "type": "line",
-      "metadata": {
-        "mapbox:group": "a14c9607bc7954ba1df7205bf660433f"
-      },
-      "source": "boundaries",
-      "source-layer": "boundaries",
-      "layout": {
-        "line-cap": "round",
-        "line-join": "round"
-      },
-      "paint": {
-        "line-color": "rgb(128 ,128 , 128)",
-        "line-width": 0.5,
         "line-opacity": 1
       }
     },

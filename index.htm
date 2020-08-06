@@ -101,30 +101,30 @@
 
   const MAPBOX_TOKEN = 'pk.eyJ1IjoiYXJrYmFyY2xheSIsImEiOiJjamdxeDF3ZXMzN2IyMnFyd3EwdGcwMDVxIn0.P2bkpp8HGNeY3-FOsxXVvA';
 
-  const TRIPS_URL = 'https://ahmadb8.sg-host.com/data/trips.json';
+  const TRIPS_URL = './data/trips.json';
 
   const METADATA = {
-    'train_metro': {
+    'train': {
       label: 'Train/Metro',
       color: [241, 90, 34],
       perc: 10
     },
-    'bus_coach': {
+    'bus': {
       label: 'Bus/Coach',
       color: [255, 198, 11],
       perc: 10
     },
-    'car_taxi': {
+    'car': {
       label: 'Car/Taxi',
       color: [77, 179, 75],
       perc: 10
     },
-    'motorcycle': {
+    'moto': {
       label: 'Motorcycle',
       color: [0, 174, 239],
       perc: 10
     },
-    'bicycle': {
+    'bike': {
       label: 'Bicycle',
       color: [236, 0, 140],
       perc: 10
@@ -168,7 +168,7 @@
       id: 'trips',
       data: filtered,
       getPath: d => d.path,
-      getTimestamps: d => d.timestamps,
+      getTimestamps: d => [0, 1],
       getColor: d => (METADATA[d.type].color),
       opacity: 1,
       widthMinPixels: 2,
